@@ -1,4 +1,8 @@
-#include <string.h>
+// bootstrap the build system:
+//
+//      cc -o nob nob.c
+//
+
 #define NOB_IMPLEMENTATION
 #include "src/nob.h"
 
