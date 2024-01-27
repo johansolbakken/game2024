@@ -1,6 +1,6 @@
 #include <string.h>
 #define NOB_IMPLEMENTATION
-#include "nob.h"
+#include "src/nob.h"
 
 typedef struct {
     char **items;
@@ -12,7 +12,7 @@ int main(void) {
     string_dynamic_array_t array = {0};
 
     DYNAMIC_ARRAY_APPEND(array, "cc");
-    DYNAMIC_ARRAY_APPEND(array, "-o game");
+    DYNAMIC_ARRAY_APPEND(array, "-o compiler");
     DYNAMIC_ARRAY_APPEND(array, "-Wall");
     DYNAMIC_ARRAY_APPEND(array, "-Wextra");
     DYNAMIC_ARRAY_APPEND(array, "-Wpedantic");
@@ -22,6 +22,7 @@ int main(void) {
     DYNAMIC_ARRAY_APPEND(array, "-O0");
     DYNAMIC_ARRAY_APPEND(array, "-Isrc");
     DYNAMIC_ARRAY_APPEND(array, "src/main.c");
+    DYNAMIC_ARRAY_APPEND(array, "src/lexer.c");
 
     char command[1024] = {0};
     for (size_t i = 0; i < array.count; ++i) {
