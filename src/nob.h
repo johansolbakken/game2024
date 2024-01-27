@@ -39,6 +39,7 @@ typedef struct {
 } nob_string_view_t;
 
 nob_string_view_t nob_string_view_from_cstr(const char *cstr);
+void nob_string_view_print(nob_string_view_t view);
 
 typedef struct {
     char *items;
@@ -81,6 +82,10 @@ nob_string_view_t nob_string_view_from_cstr(const char *cstr) {
     view.start = (char*)cstr;
     view.count = strlen(cstr);
     return view;
+}
+
+void nob_string_view_print(nob_string_view_t view) {
+    fwrite(view.start, 1, view.count, stdout);
 }
 
 bool nob_read_entire_file(const char *filename, nob_string_t* string) {

@@ -17,7 +17,12 @@ int main(int argc, char**argv) {
     view.start = source.items;
     view.count = source.count;
 
-    printf("%s\n", source.items);
+    lexer_t lexer = {0};
+    lexer.source = view;
+
+    nob_string_view_t token = lexer_next_token(&lexer);
+    nob_string_view_print(token);
+    printf("\n");
 
     nob_free(source.items);
 
