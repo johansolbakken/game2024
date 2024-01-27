@@ -1,4 +1,5 @@
 #define NOB_IMPLEMENTATION
+#define NOB_TRACK_ALLOCATIONS
 #include "nob.h"
 
 #include "lexer.h"

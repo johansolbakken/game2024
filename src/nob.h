@@ -48,7 +48,10 @@ typedef struct {
 
  bool nob_read_entire_file(const char *filename, nob_string_t* string);
 
-void* nob_malloc(size_t size);
+void* nob_malloc_p(size_t size
+    , const char *file
+    , int line);
+#define nob_malloc(size) nob_malloc_p(size, __FILE__, __LINE__)
 void nob_free(void *ptr);
 void* nob_realloc(void *ptr, size_t size);
 void nob_print_allocations(void);
@@ -128,26 +131,50 @@ bool nob_read_entire_file(const char *filename, nob_string_t* string) {
     return true;
 }
 
+typedef struct {
+    void* ptr;
+    size_t size;
+    const char *file;
+    int line;
+} nob_allocation_t;
+
 typedef struct nob_allocation_dynamic_array_t {
-    void **items;
+    nob_allocation_t *items;
     size_t count;
     size_t capacity;
 } nob_allocation_dynamic_array_t;
 
 nob_allocation_dynamic_array_t allocations = {0};
 
-void* nob_malloc(size_t size)
+void* nob_malloc_p(size_t size
+    , const char *file
+    , int line)
 {
     void *ptr = malloc(size);
-    DYNAMIC_ARRAY_APPEND(allocations, ptr);
+#ifdef NOB_TRACK_ALLOCATIONS
+    if (!ptr) {
+        printf("Failed to allocate %zu bytes of memory in file '%s' on line %d: %s\n"
+            , size
+            , file
+            , line
+            , strerror(errno));
+        return NULL;
+    }
+    nob_allocation_t allocation = {ptr, size, file, line};
+    DYNAMIC_ARRAY_APPEND(allocations, allocation);
+#else
+   (void)file;
+    (void)line;
+#endif // NOB_TRACK_ALLOCATIONS
     return ptr;
 }
 
 void nob_free(void *ptr)
 {
+#ifdef NOB_TRACK_ALLOCATIONS
     bool found = false;
     for (size_t i = 0; i < allocations.count; ++i) {
-        if (allocations.items[i] == ptr) {
+        if (allocations.items[i].ptr == ptr) {
             found = true;
             break;
         }
@@ -156,25 +183,30 @@ void nob_free(void *ptr)
         printf("Attempted to free a pointer that was not allocated by nob_malloc: %p\n", ptr);
         return;
     }
+#endif // NOB_TRACK_ALLOCATIONS
     free(ptr);
+#ifdef NOB_TRACK_ALLOCATIONS
     for (size_t i = 0; i < allocations.count; ++i) {
-        if (allocations.items[i] == ptr) {
+        if (allocations.items[i].ptr == ptr) {
             for (size_t j = i; j < allocations.count - 1; ++j) {
                 allocations.items[j] = allocations.items[j + 1];
             }
             --allocations.count;
         }
     }
+#endif // NOB_TRACK_ALLOCATIONS
 }
 
 void* nob_realloc(void *ptr, size_t size)
 {
     void *new_ptr = realloc(ptr, size);
+#ifdef NOB_TRACK_ALLOCATIONS
     for (size_t i = 0; i < allocations.count; ++i) {
-        if (allocations.items[i] == ptr) {
-            allocations.items[i] = new_ptr;
+        if (allocations.items[i].ptr == ptr) {
+            allocations.items[i].ptr = new_ptr;
         }
     }
+#endif // NOB_TRACK_ALLOCATIONS
     return new_ptr;
 }
 
@@ -185,7 +217,11 @@ void nob_print_allocations(void)
     }
     printf("Allocations:\n");
     for (size_t i = 0; i < allocations.count; ++i) {
-        printf("  %p\n", allocations.items[i]);
+        printf("  %p: %zu bytes allocated in file %s:%d\n"
+            , allocations.items[i].ptr
+            , allocations.items[i].size
+            , allocations.items[i].file
+            , allocations.items[i].line);
     }
 }
 
