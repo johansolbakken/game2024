@@ -11,14 +11,14 @@
     do { \
         if ((array).count == (array).capacity) { \
             (array).capacity = (array).capacity ? (array).capacity * 2 : 4; \
-            (array).items = realloc((array).items, sizeof(*(array).items) * (array).capacity); \
+            (array).items = nob_realloc((array).items, sizeof(*(array).items) * (array).capacity); \
         } \
         (array).items[(array).count++] = (item); \
     } while (0)
 
 #define DYNAMIC_ARRAY_FREE(array) \
     do { \
-        free((array).items); \
+        nob_free((array).items); \
         (array).items = NULL; \
         (array).count = 0; \
         (array).capacity = 0; \
@@ -34,7 +34,7 @@ void* arena_alloc(arena_t *arena, size_t size);
 void arena_free(arena_t *arena);
 
 typedef struct {
-    char *items;
+    char *start;
     size_t count;
 } nob_string_view_t;
 
@@ -48,11 +48,17 @@ typedef struct {
 
  bool nob_read_entire_file(const char *filename, nob_string_t* string);
 
+void* nob_malloc(size_t size);
+void nob_free(void *ptr);
+void* nob_realloc(void *ptr, size_t size);
+void nob_print_allocations(void);
+
 #ifdef NOB_IMPLEMENTATION
+
 void* arena_alloc(arena_t *arena, size_t size) {
     if (arena->size + size > arena->capacity) {
         arena->capacity = arena->capacity * 2 + size;
-        arena->base = (char*)realloc(arena->base, arena->capacity);
+        arena->base = (char*)nob_realloc(arena->base, arena->capacity);
     }
 
     void *result = arena->base + arena->size;
@@ -61,7 +67,7 @@ void* arena_alloc(arena_t *arena, size_t size) {
 }
 
 void arena_free(arena_t *arena) {
-    free(arena->base);
+    nob_free(arena->base);
     arena->base = NULL;
     arena->size = 0;
     arena->capacity = 0;
@@ -69,13 +75,12 @@ void arena_free(arena_t *arena) {
 
 nob_string_view_t nob_string_view_from_cstr(const char *cstr) {
     nob_string_view_t view;
-    view.items = (char*)cstr;
+    view.start = (char*)cstr;
     view.count = strlen(cstr);
     return view;
 }
 
 bool nob_read_entire_file(const char *filename, nob_string_t* string) {
-    (void) string;
     errno = 0;
     FILE *file = fopen(filename, "rb");
     if (!file) {
@@ -102,7 +107,7 @@ bool nob_read_entire_file(const char *filename, nob_string_t* string) {
         return false;
     }
 
-    string->items = (char*)malloc(size + 1);
+    string->items = (char*)nob_malloc(size + 1);
     if (!string->items) {
         printf("Failed to allocate memory for file '%s': %s\n", filename, strerror(errno));
         fclose(file);
@@ -122,5 +127,67 @@ bool nob_read_entire_file(const char *filename, nob_string_t* string) {
 
     return true;
 }
+
+typedef struct nob_allocation_dynamic_array_t {
+    void **items;
+    size_t count;
+    size_t capacity;
+} nob_allocation_dynamic_array_t;
+
+nob_allocation_dynamic_array_t allocations = {0};
+
+void* nob_malloc(size_t size)
+{
+    void *ptr = malloc(size);
+    DYNAMIC_ARRAY_APPEND(allocations, ptr);
+    return ptr;
+}
+
+void nob_free(void *ptr)
+{
+    bool found = false;
+    for (size_t i = 0; i < allocations.count; ++i) {
+        if (allocations.items[i] == ptr) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        printf("Attempted to free a pointer that was not allocated by nob_malloc: %p\n", ptr);
+        return;
+    }
+    free(ptr);
+    for (size_t i = 0; i < allocations.count; ++i) {
+        if (allocations.items[i] == ptr) {
+            for (size_t j = i; j < allocations.count - 1; ++j) {
+                allocations.items[j] = allocations.items[j + 1];
+            }
+            --allocations.count;
+        }
+    }
+}
+
+void* nob_realloc(void *ptr, size_t size)
+{
+    void *new_ptr = realloc(ptr, size);
+    for (size_t i = 0; i < allocations.count; ++i) {
+        if (allocations.items[i] == ptr) {
+            allocations.items[i] = new_ptr;
+        }
+    }
+    return new_ptr;
+}
+
+void nob_print_allocations(void)
+{
+    if (allocations.count == 0) {
+        return;
+    }
+    printf("Allocations:\n");
+    for (size_t i = 0; i < allocations.count; ++i) {
+        printf("  %p\n", allocations.items[i]);
+    }
+}
+
 
 #endif // NOB_IMPLEMENTATION
