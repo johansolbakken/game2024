@@ -6,7 +6,7 @@
 
 int main(int argc, char**argv) {
     if (argc < 2) {
-        printf("Usage: %s <filename>\n", argv[0]);
+        nob_log(NOB_INFO, "Usage: %s <filename>\n", argv[0]);
         return 1;
     }
 
@@ -20,9 +20,12 @@ int main(int argc, char**argv) {
     lexer_t lexer = {0};
     lexer.source = view;
 
-    nob_string_view_t token = lexer_next_token(&lexer);
-    nob_string_view_print(token);
-    printf("\n");
+    token_t token = lexer_next_token(&lexer);
+    while (token.type > 0) {
+        nob_string_view_print(token.lexeme);
+        printf("\n");
+        token = lexer_next_token(&lexer);
+    }
 
     nob_free(source.items);
 
