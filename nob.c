@@ -28,6 +28,7 @@ int main(void) {
     DYNAMIC_ARRAY_APPEND(array, "-Isrc");
     DYNAMIC_ARRAY_APPEND(array, "src/main.c");
     DYNAMIC_ARRAY_APPEND(array, "src/lexer.c");
+    DYNAMIC_ARRAY_APPEND(array, "src/parser.c");
 
     char command[1024] = {0};
     for (size_t i = 0; i < array.count; ++i) {

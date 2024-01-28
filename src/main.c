@@ -3,6 +3,7 @@
 #include "nob.h"
 
 #include "lexer.h"
+#include "parser.h"
 
 int main(int argc, char**argv) {
     if (argc < 2) {
@@ -20,12 +21,11 @@ int main(int argc, char**argv) {
     lexer_t lexer = {0};
     lexer.source = view;
 
-    token_t token = lexer_next_token(&lexer);
-    while (token.type > 0) {
-        nob_string_view_print(token.lexeme);
-        printf("\n");
-        token = lexer_next_token(&lexer);
-    }
+    parser_t parser = {0};
+    parser.lexer = &lexer;
+
+    node_t* node = parse_program(&parser);
+    (void) node;
 
     nob_free(source.items);
 
