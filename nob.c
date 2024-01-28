@@ -3,6 +3,7 @@
 //      cc -o nob nob.c
 //
 
+#define NOB_TRACK_ALLOCATIONS
 #define NOB_IMPLEMENTATION
 #include "src/nob.h"
 
@@ -34,9 +35,12 @@ int main(void) {
         strcat(command, " ");
     }
 
+    nob_log(NOB_INFO, "%s", command);
     system(command);
 
     DYNAMIC_ARRAY_FREE(array);
+
+    nob_print_allocations();
 
     return 0;
 }

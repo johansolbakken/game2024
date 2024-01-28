@@ -6,6 +6,15 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include <stdarg.h>
+
+typedef enum {
+    NOB_INFO = 0,
+    NOB_WARNING = 1,
+    NOB_ERROR = 2,
+} Severity;
+
+void nob_log(Severity severity, const char *format, ...);
 
 #define DYNAMIC_ARRAY_APPEND(array, item) \
     do { \
@@ -54,7 +63,8 @@ void* nob_malloc_p(size_t size
     , int line);
 #define nob_malloc(size) nob_malloc_p(size, __FILE__, __LINE__)
 void nob_free(void *ptr);
-void* nob_realloc(void *ptr, size_t size);
+void* nob_realloc_p(void *ptr, size_t size, const char *file, int line);
+#define nob_realloc(ptr, size) nob_realloc_p(ptr, size, __FILE__, __LINE__)
 void nob_print_allocations(void);
 
 #ifdef NOB_IMPLEMENTATION
@@ -143,7 +153,7 @@ typedef struct {
     int line;
 } nob_allocation_t;
 
-typedef struct nob_allocation_dynamic_array_t {
+typedef struct {
     nob_allocation_t *items;
     size_t count;
     size_t capacity;
@@ -158,7 +168,7 @@ void* nob_malloc_p(size_t size
     void *ptr = malloc(size);
 #ifdef NOB_TRACK_ALLOCATIONS
     if (!ptr) {
-        printf("Failed to allocate %zu bytes of memory in file '%s' on line %d: %s\n"
+        nob_log(NOB_ERROR,"Failed to allocate %zu bytes of memory in file '%s' on line %d: %s"
             , size
             , file
             , line
@@ -166,7 +176,14 @@ void* nob_malloc_p(size_t size
         return NULL;
     }
     nob_allocation_t allocation = {ptr, size, file, line};
-    DYNAMIC_ARRAY_APPEND(allocations, allocation);
+    if (!allocations.items) {
+        allocations.items = (nob_allocation_t*)malloc(sizeof(nob_allocation_t));
+        allocations.items[0] = allocation;
+        allocations.count = 1;
+        allocations.capacity = 1;
+    } else {
+        DYNAMIC_ARRAY_APPEND(allocations, allocation);
+    }
 #else
    (void)file;
     (void)line;
@@ -185,7 +202,7 @@ void nob_free(void *ptr)
         }
     }
     if (!found) {
-        printf("Attempted to free a pointer that was not allocated by nob_malloc: %p\n", ptr);
+        nob_log(NOB_WARNING, "Attempted to free a pointer that was not allocated by nob_malloc: %p", ptr);
         return;
     }
 #endif // NOB_TRACK_ALLOCATIONS
@@ -202,13 +219,17 @@ void nob_free(void *ptr)
 #endif // NOB_TRACK_ALLOCATIONS
 }
 
-void* nob_realloc(void *ptr, size_t size)
+void* nob_realloc_p(void *ptr, size_t size, const char *file, int line)
 {
+    if (!ptr) {
+        return nob_malloc_p(size, file, line);
+    }
     void *new_ptr = realloc(ptr, size);
 #ifdef NOB_TRACK_ALLOCATIONS
     for (size_t i = 0; i < allocations.count; ++i) {
         if (allocations.items[i].ptr == ptr) {
             allocations.items[i].ptr = new_ptr;
+            allocations.items[i].size = size;
         }
     }
 #endif // NOB_TRACK_ALLOCATIONS
@@ -220,9 +241,9 @@ void nob_print_allocations(void)
     if (allocations.count == 0) {
         return;
     }
-    printf("Allocations:\n");
+    nob_log(NOB_INFO,"Allocations:");
     for (size_t i = 0; i < allocations.count; ++i) {
-        printf("  %p: %zu bytes allocated in file %s:%d\n"
+        nob_log(NOB_INFO,"  %p: %zu bytes allocated in file %s:%d"
             , allocations.items[i].ptr
             , allocations.items[i].size
             , allocations.items[i].file
@@ -230,5 +251,23 @@ void nob_print_allocations(void)
     }
 }
 
+const char* severity_strings[] = {
+    // blue info
+    "\x1b[34mINFO\x1b[0m",
+    // yellow warning
+    "\x1b[33mWARN\x1b[0m",
+    // red error
+    "\x1b[31mERROR\x1b[0m",
+};
+
+void nob_log(Severity severity, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    printf("%s: ", severity_strings[severity]);
+    vprintf(format, args);
+    printf("\n");
+    va_end(args);
+}
 
 #endif // NOB_IMPLEMENTATION
