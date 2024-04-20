@@ -1,4 +1,2 @@
-*.dSYM
-game
-nob
-compiler
+build
+.cache
