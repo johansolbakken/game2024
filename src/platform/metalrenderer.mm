@@ -310,6 +310,7 @@ void MetalRenderer::drawCube(const glm::vec3 &position, const glm::vec3 &size,
 
   glm::mat4 model = glm::translate(glm::mat4(1.0), position);
   model = glm::rotate(model, rotation, glm::vec3(0.0, 1.0, 0.0));
+  model = glm::scale(model, size);
   glm::mat4 view =
       glm::lookAt(glm::vec3(3.0, 3.0, 3.0), glm::vec3(0.0, 0.0, 0.0),
                   glm::vec3(0.0, 1.0, 0.0));

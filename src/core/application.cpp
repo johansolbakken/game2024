@@ -35,7 +35,7 @@ namespace JohanGame2024
             Renderer::clearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
             Renderer::begin();
-            Renderer::drawCube({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
+            Renderer::drawCube({0.0f, 0.0f, 0.0f}, {1.0f, 2.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
             Renderer::end();
             m_window->onUpdate();
         }
