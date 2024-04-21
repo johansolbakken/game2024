@@ -18,5 +18,7 @@ namespace JohanGame2024
         static void clearColor(const glm::vec4 &color);
 
         static void drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color);
+
+        static void drawCube(const glm::vec3 &position, const glm::vec3 &size, const glm::vec4 &color);
     };
 }

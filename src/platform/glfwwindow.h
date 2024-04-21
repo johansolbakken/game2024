@@ -16,6 +16,8 @@ namespace JohanGame2024
 
         void *nativeWindow() const override;
 
+        uint32_t width() const override { return m_width; }
+        uint32_t height() const override { return m_height; }
         uint32_t framebufferWidth() const override;
         uint32_t framebufferHeight() const override;
 

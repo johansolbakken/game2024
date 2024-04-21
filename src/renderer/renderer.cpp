@@ -33,4 +33,10 @@ namespace JohanGame2024
     {
         MetalRenderer::drawQuad(position, size, color);
     }
+
+    void Renderer::drawCube(const glm::vec3 &position, const glm::vec3 &size, const glm::vec4 &color)
+    {
+        MetalRenderer::drawCube(position, size, color);
+    }
+    
 } // namespace JohanGame2024

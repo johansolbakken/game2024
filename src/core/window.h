@@ -23,6 +23,8 @@ namespace JohanGame2024
         virtual void onUpdate() = 0;
 
         virtual void* nativeWindow() const = 0;
+        virtual uint32_t width() const = 0;
+        virtual uint32_t height() const = 0;
         virtual uint32_t framebufferWidth() const = 0;
         virtual uint32_t framebufferHeight() const = 0;
 
