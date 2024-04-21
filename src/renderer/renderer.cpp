@@ -24,6 +24,11 @@ namespace JohanGame2024
         MetalRenderer::end();
     }
 
+    void Renderer::clearColor(const glm::vec4 &color)
+    {
+        MetalRenderer::clearColor(color);
+    }
+
     void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color)
     {
         MetalRenderer::drawQuad(position, size, color);

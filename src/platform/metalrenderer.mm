@@ -97,6 +97,10 @@ void MetalRenderer::end() {
   s_data->drawable = nullptr;
 }
 
+void MetalRenderer::clearColor(const glm::vec4 &color) {
+  s_data->clearColor = color;
+}
+
 void MetalRenderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size,
                              const glm::vec4 &color) {}
 } // namespace JohanGame2024

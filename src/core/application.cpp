@@ -32,6 +32,8 @@ namespace JohanGame2024
     {
         while (m_running)
         {
+            Renderer::clearColor({0.0f, 0.0f, 0.0f, 1.0f});
+
             Renderer::begin();
             Renderer::drawQuad({0.0f, 0.0f}, {0.5f, 0.5f}, {1.0f, 0.0f, 0.0f, 1.0f});
             Renderer::end();
