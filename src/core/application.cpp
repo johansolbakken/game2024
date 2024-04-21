@@ -1,5 +1,7 @@
 #include "application.h"
 
+#include "renderer/renderer.h"
+
 namespace JohanGame2024
 {
     Application *Application::s_instance = nullptr;
@@ -8,7 +10,7 @@ namespace JohanGame2024
     {
         if (s_instance)
         {
-            std::cout << "Application already exists!" << std::endl;   
+            std::cout << "Application already exists!" << std::endl;
             return;
         }
 
@@ -16,17 +18,23 @@ namespace JohanGame2024
 
         m_window = Window::create();
 
+        Renderer::init(m_window);
+
         m_running = true;
     }
 
     Application::~Application()
     {
+        Renderer::shutdown();
     }
 
     void Application::run()
     {
         while (m_running)
         {
+            Renderer::begin();
+            Renderer::drawQuad({0.0f, 0.0f}, {0.5f, 0.5f}, {1.0f, 0.0f, 0.0f, 1.0f});
+            Renderer::end();
             m_window->onUpdate();
         }
     }

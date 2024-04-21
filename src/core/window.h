@@ -22,6 +22,10 @@ namespace JohanGame2024
         virtual ~Window() = default;
         virtual void onUpdate() = 0;
 
+        virtual void* nativeWindow() const = 0;
+        virtual uint32_t framebufferWidth() const = 0;
+        virtual uint32_t framebufferHeight() const = 0;
+
         static Ref<Window> create(const WindowProps &props = WindowProps());
     };
 }
