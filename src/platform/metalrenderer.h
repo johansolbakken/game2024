@@ -15,6 +15,8 @@ namespace JohanGame2024
         static void begin();
         static void end();
 
+        static void resize(uint32_t width, uint32_t height);
+
         static void clearColor(const glm::vec4 &color);
 
         static void drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color);

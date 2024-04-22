@@ -10,6 +10,8 @@ namespace JohanGame2024
         static void init(const Ref<Window> &window);
         static void shutdown();
 
+        static void resize(uint32_t width, uint32_t height);
+
         static void begin();
         static void end();
 

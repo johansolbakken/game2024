@@ -14,6 +14,11 @@ namespace JohanGame2024
         MetalRenderer::shutdown();
     }
 
+    void Renderer::resize(uint32_t width, uint32_t height)
+    {
+        MetalRenderer::resize(width, height);
+    }
+
     void Renderer::begin()
     {
         MetalRenderer::begin();
@@ -38,5 +43,5 @@ namespace JohanGame2024
     {
         MetalRenderer::drawCube(position, size, color);
     }
-    
+
 } // namespace JohanGame2024

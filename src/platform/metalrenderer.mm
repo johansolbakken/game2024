@@ -238,6 +238,40 @@ void MetalRenderer::shutdown() {
   delete s_data;
 }
 
+void MetalRenderer::resize(uint32_t width, uint32_t height) {
+  auto layer = s_data->layer;
+  layer.drawableSize = CGSizeMake(width, height);
+
+  [s_data->renderPassDescriptor.colorAttachments[0].texture release];
+  [s_data->renderPassDescriptor.depthAttachment.texture release];
+
+  MTLTextureDescriptor *colorTextureDescriptor = [MTLTextureDescriptor
+      texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                   width:width
+                                  height:height
+                               mipmapped:NO];
+
+  colorTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+  colorTextureDescriptor.storageMode = MTLStorageModePrivate;
+  id<MTLTexture> colorTexture =
+      [s_data->device newTextureWithDescriptor:colorTextureDescriptor];
+
+  s_data->renderPassDescriptor.colorAttachments[0].texture = colorTexture;
+
+  MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor
+      texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
+                                   width:width
+                                  height:height
+                               mipmapped:NO];
+
+  depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+  depthTextureDescriptor.storageMode = MTLStorageModePrivate;
+  id<MTLTexture> depthTexture =
+      [s_data->device newTextureWithDescriptor:depthTextureDescriptor];
+
+  s_data->renderPassDescriptor.depthAttachment.texture = depthTexture;
+}
+
 void MetalRenderer::begin() {
   auto layer = s_data->layer;
   auto renderPassDescriptor = s_data->renderPassDescriptor;

@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#include "renderer/renderer.h"
+
 namespace JohanGame2024
 {
 
@@ -40,6 +42,13 @@ namespace JohanGame2024
             std::cerr << "Failed to create GLFW window" << std::endl;
             return;
         }
+
+        // Renderer::resize(props.width, props.height);
+        glfwSetWindowSizeCallback(m_window, [](GLFWwindow *window, int width, int height)
+                                  { 
+                                    int w, h;
+                                    glfwGetFramebufferSize(window, &w, &h);
+                                    Renderer::resize(w, h); });
     }
 
     GlfwWindow::~GlfwWindow()
